@@ -1,0 +1,172 @@
+openapi: 3.0.3
+info:
+  title: User segmentation service API
+  description: Cервис, хранящий пользователя и сегменты, в которых он состоит (создание, изменение, удаление сегментов, а также добавление и удаление пользователей в сегмент)
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+paths:
+  '/api/seg':
+    post:
+      summary: Pегистрация новых сегметов
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - segments
+              properties:
+                segments:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        200:
+          description: Операция успешно завершена
+          content:
+            application/json:
+              schema:
+                type: string
+        401:
+          description: Операция завершена с ошибкой
+
+  '/api/add':
+    post:
+      summary: Добавления пользователя и его списка зарегистрированных сегментов
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - personID
+                - segments
+              properties:
+                personID:
+                  type: integer
+                segments:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        200:
+          description: Операция успешно завершена
+          content:
+            application/json:
+              schema:
+                type: string
+        401:
+          description: Операция завершена с ошибкой
+
+  '/api/segment/{segmentName}':
+    get:
+      summary: Получение ID все пользователей, которые имеют данный сегмент
+      parameters:
+        - in: path
+          name: segmentName
+          required: true
+          schema:
+            description: Сегмент, по которому необходимо получить ID пользователей
+            type: string
+            pattern: '[A-Za-z0-9_\-]+'
+      responses:
+        200:
+          description: Операция успешно завершена
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - segments
+                properties:
+                  segments:
+                    type: array
+                    items:
+                      type: string
+        401:
+          description: Операция завершена с ошибкой
+
+  '/api/person/{personID}':
+    get:
+      summary: Получение сегментов пользователя с данным ID
+      parameters:
+        - in: path
+          name: personID
+          required: true
+          schema:
+            description: ID, по которому необходимо получить ID пользователей
+            type: string
+            pattern: '[a-z0-9]+'
+      responses:
+        200:
+          description: Операция успешно завершена
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - segments
+                properties:
+                  segments:
+                    type: array
+                    items:
+                      type: string
+        401:
+          description: Операция завершена с ошибкой
+
+  '/api/deleteSegment':
+    post:
+      summary: Удаление сегмента у всех пользователей
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - segment
+              properties:
+                segment:
+                  type: string
+      responses:
+        200:
+          description: Операция успешно завершена
+          content:
+            application/json:
+              schema:
+                type: string
+        401:
+          description: Операция завершена с ошибкой
+
+  '/api/deleteSegments/{personID}':
+    post:
+      summary: Удаление сегментов у опредленного пользователя
+      parameters:
+        - in: path
+          name: personID
+          required: true
+          schema:
+            description: ID, по которому необходимо получить ID пользователей
+            type: string
+            pattern: '[a-z0-9]+'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - segments
+              properties:
+                segments:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        200:
+          description: Операция успешно завершена
+          content:
+            application/json:
+              schema:
+                type: string
+        401:
+          description: Операция завершена с ошибкой
