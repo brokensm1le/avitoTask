@@ -48,7 +48,7 @@ curl -XGET http://0.0.0.0:8080/api/segment/AVITO_VOICE_MESSAGES -H 'accept: appl
 ```
 curl -XPOST http://0.0.0.0:8080/api/deleteSegments/1002 -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"segments": ["AVITO_PERFORMANCE_VAS"]}'
 ```
-### Доп задание 3
+### Доп задание №3
 
 ```
 curl -XPOST http://0.0.0.0:8080/api/addWithPercentage -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"segment": "AVITO_PERFORMANCE_VAS", "IDs": [1003, 1004, 1005, 1006], "percentage":50}'
