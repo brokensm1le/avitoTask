@@ -73,6 +73,8 @@ curl -XGET http://0.0.0.0:8080/api/checkHistory/1002 -H 'accept: application/jso
 
 ### Доп задание №3
 
+В данном задание просто рандомил число от 1 до 100, если число больше чем *percentage*, то сегмент не попал к Пользователю, иначе попал.
+
 ```
 curl -XPOST http://0.0.0.0:8080/api/addWithPercentage -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"segment": "AVITO_PERFORMANCE_VAS", "IDs": [1003, 1004, 1005, 1006], "percentage":50}'
 ```
