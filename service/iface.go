@@ -7,4 +7,5 @@ type Manager interface {
 	GetIDs(segment string) ([]int64, error)
 	DeleteSegment(segment string) error
 	DeleteSegments(personID int, segments []string) error
+	PostWithPer(segment string, IDs []int64, per int) ([]int64, error)
 }

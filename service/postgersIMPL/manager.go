@@ -7,6 +7,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
 	"log"
+	"math/rand"
 	"slices"
 )
 
@@ -230,4 +231,47 @@ func (m *Manager) DeleteSegments(personID int, segments []string) error {
 		return nil
 	})
 	return err
+}
+
+func (m *Manager) PostWithPer(segment string, ids []int64, per int) ([]int64, error) {
+	var item seg_id
+	err := m.db.Where("segment = ?", segment).First(&item).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var newIds []int64
+	for _, val := range ids {
+		random := rand.Intn(100)
+		if random <= per && !slices.Contains(item.Ids, val) && !slices.Contains(newIds, val) {
+			newIds = append(newIds, val)
+		}
+	}
+	item.Ids = append(item.Ids, newIds...)
+	err = m.db.Transaction(func(tx *gorm.DB) error {
+		if err = tx.Model(&seg_id{}).Where("segment = ?", segment).Update("ids", item.Ids).Error; err != nil {
+			return err
+		}
+
+		for _, id := range item.Ids {
+			var check id_seg
+			err = m.db.Where("person_id = ?", id).First(&check).Error
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				if err = tx.Create(&id_seg{int(id), []string{segment}}).Error; err != nil {
+					return err
+				}
+			} else if err == nil {
+				check.Segments = append(check.Segments, segment)
+				if err = tx.Model(&id_seg{}).Where("person_id = ?", id).Update("segments", check.Segments).Error; err != nil {
+					return err
+				}
+			} else {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	return newIds, nil
 }

@@ -171,6 +171,36 @@ func (h *HTTPHandler) DeleteSegments(rw http.ResponseWriter, r *http.Request) {
 	_, _ = rw.Write(resp)
 }
 
+type AddWithPerRequest struct {
+	Segment    string  `json:"segment"`
+	Percentage int     `json:"percentage"`
+	PersonIDs  []int64 `json:"IDs"`
+}
+
+func (h *HTTPHandler) AddWithPercentage(rw http.ResponseWriter, r *http.Request) {
+	var data AddWithPerRequest
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if data.Percentage < 1 && data.Percentage > 100 {
+		http.Error(rw, "Percentages are [1;100]", http.StatusBadRequest)
+		return
+	}
+	log.Println("ADD with percentage: ", data.Segment, data.PersonIDs, data.Percentage)
+	var ans []int64
+	ans, err = h.manager.PostWithPer(data.Segment, data.PersonIDs, data.Percentage)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusForbidden)
+		return
+	}
+	resp, _ := json.Marshal(map[string][]int64{"added ids": ans})
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusOK)
+	_, _ = rw.Write(resp)
+}
+
 func NewServer(manager service.Manager) *http.Server {
 
 	handler := NewHTTPHandler(manager)
@@ -181,6 +211,7 @@ func NewServer(manager service.Manager) *http.Server {
 	r.HandleFunc("/api/segment/{segment:[A-Za-z0-9_\\-]+}", handler.GetIDs).Methods(http.MethodGet)
 	r.HandleFunc("/api/deleteSegment", handler.DeleteSegment).Methods(http.MethodPost)
 	r.HandleFunc("/api/deleteSegments/{personID:[a-z0-9]+}", handler.DeleteSegments).Methods(http.MethodPost)
+	r.HandleFunc("/api/addWithPercentage", handler.AddWithPercentage).Methods(http.MethodPost)
 
 	return &http.Server{
 		Handler:      r,
