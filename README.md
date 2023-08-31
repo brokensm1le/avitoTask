@@ -50,9 +50,11 @@ curl -XPOST http://0.0.0.0:8080/api/deleteSegments/1002 -H 'accept: application/
 ```
 
 ### Доп задание №1
+
 ```
-curl -XGET http://0.0.0.0:8080/api/checkHistory/2 -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"timeFrom": "2023-08-31T18:05:12.000Z", "timeTo": "2023-08-31T18:13:40.000Z"}'
+curl -XGET http://0.0.0.0:8080/api/checkHistory/1002 -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"timeFrom": "2023-08-31T18:05:12.000Z", "timeTo": "2023-08-31T18:13:40.000Z"}'
 ```
+
 *Замечание.* По тексту задания не понял какую именно ссылку надо было отправлять пользователю. Поэтому вывод истории выводится в консоль.
 
 
