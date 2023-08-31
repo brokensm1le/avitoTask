@@ -201,6 +201,38 @@ func (h *HTTPHandler) AddWithPercentage(rw http.ResponseWriter, r *http.Request)
 	_, _ = rw.Write(resp)
 }
 
+type ResponseTime struct {
+	TimeFrom time.Time `json:"timeFrom"`
+	TimeTo   time.Time `json:"timeTo"`
+}
+
+func (h *HTTPHandler) checkHistory(rw http.ResponseWriter, r *http.Request) {
+	personID, err := strconv.Atoi(r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:])
+	if err != nil {
+		http.Error(rw, "Некорректный ID пользователя", http.StatusBadRequest)
+		return
+	}
+
+	var data ResponseTime
+	err = json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	log.Println("Get history time: ", data.TimeFrom, data.TimeTo)
+	var ans []service.Story
+	ans, err = h.manager.GetHistory(personID, data.TimeFrom, data.TimeTo)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusForbidden)
+		return
+	}
+	resp, _ := json.Marshal(ans)
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusOK)
+	_, _ = rw.Write(resp)
+}
+
 func NewServer(manager service.Manager) *http.Server {
 
 	handler := NewHTTPHandler(manager)
@@ -212,6 +244,7 @@ func NewServer(manager service.Manager) *http.Server {
 	r.HandleFunc("/api/deleteSegment", handler.DeleteSegment).Methods(http.MethodPost)
 	r.HandleFunc("/api/deleteSegments/{personID:[a-z0-9]+}", handler.DeleteSegments).Methods(http.MethodPost)
 	r.HandleFunc("/api/addWithPercentage", handler.AddWithPercentage).Methods(http.MethodPost)
+	r.HandleFunc("/api/checkHistory/{personID:[a-z0-9]+}", handler.checkHistory).Methods(http.MethodGet)
 
 	return &http.Server{
 		Handler:      r,

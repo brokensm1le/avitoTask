@@ -1,14 +1,15 @@
 package postgersIMPL
 
 import (
+	"avito_task/service"
 	"errors"
 	"fmt"
 	_ "github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
-	"log"
 	"math/rand"
 	"slices"
+	"time"
 )
 
 type id_seg struct {
@@ -29,6 +30,7 @@ func NewManager(dsn string) *Manager {
 
 	db.AutoMigrate(&id_seg{})
 	db.AutoMigrate(&seg_id{})
+	db.AutoMigrate(&service.Story{})
 
 	return &Manager{
 		db,
@@ -57,6 +59,11 @@ func (m *Manager) PostPaS(personID int, segments []string) error {
 				return err
 			}
 
+			st := service.Story{int64(personID), "add", segments, time.Now()}
+			if err = tx.Create(&st).Error; err != nil {
+				return err
+			}
+
 			for _, seg := range segments {
 				var si seg_id
 				if err = m.db.Where("segment = ?", seg).First(&si).Error; err != nil {
@@ -82,6 +89,11 @@ func (m *Manager) PostPaS(personID int, segments []string) error {
 
 		err = m.db.Transaction(func(tx *gorm.DB) error {
 			if err = tx.Model(&id_seg{}).Where("person_id = ?", personID).Update("segments", oldSeg).Error; err != nil {
+				return err
+			}
+
+			st := service.Story{int64(personID), "add", newSeg, time.Now()}
+			if err = tx.Create(&st).Error; err != nil {
 				return err
 			}
 
@@ -161,15 +173,20 @@ func (m *Manager) DeleteSegment(segment string) error {
 		if err = tx.Where("segment = ?", segment).Delete(&seg_id{}).Error; err != nil {
 			return err
 		}
+
 		ids := []int64(item.Ids)
 		for _, id := range ids {
+			st := service.Story{id, "delete", pq.StringArray{segment}, time.Now()}
+			if err = tx.Create(&st).Error; err != nil {
+				return err
+			}
+
 			var t id_seg
 			if err = tx.Where("person_id = ?", id).First(&t).Error; err != nil {
 				return err
 			}
 
 			newSlice := removeElemStr(t.Segments, segment)
-			log.Println("NEWSLICE: ", newSlice)
 			if err = tx.Model(&id_seg{}).Where("person_id = ?", id).Update("segments", newSlice).Error; err != nil {
 				return err
 			}
@@ -182,7 +199,7 @@ func (m *Manager) DeleteSegment(segment string) error {
 
 func removeElements(segments []string, deleteSeg []string) []string {
 	lenArr := len(segments)
-	var k int = 0
+	var k = 0
 	for i := 0; i < lenArr; {
 		if !slices.Contains(deleteSeg, segments[i]) {
 			segments[k] = segments[i]
@@ -214,6 +231,11 @@ func (m *Manager) DeleteSegments(personID int, segments []string) error {
 	newSeg := removeElements(item.Segments, segments)
 	err = m.db.Transaction(func(tx *gorm.DB) error {
 		if err = m.db.Model(&id_seg{}).Where("person_id = ?", personID).Update("segments", newSeg).Error; err != nil {
+			return err
+		}
+
+		st := service.Story{int64(personID), "delete", segments, time.Now()}
+		if err = tx.Create(&st).Error; err != nil {
 			return err
 		}
 
@@ -254,6 +276,11 @@ func (m *Manager) PostWithPer(segment string, ids []int64, per int) ([]int64, er
 		}
 
 		for _, id := range item.Ids {
+			st := service.Story{id, "add", pq.StringArray{segment}, time.Now()}
+			if err = tx.Create(&st).Error; err != nil {
+				return err
+			}
+
 			var check id_seg
 			err = m.db.Where("person_id = ?", id).First(&check).Error
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -274,4 +301,13 @@ func (m *Manager) PostWithPer(segment string, ids []int64, per int) ([]int64, er
 	})
 
 	return newIds, nil
+}
+
+func (m *Manager) GetHistory(personID int, timeFrom time.Time, timeTo time.Time) ([]service.Story, error) {
+	var item []service.Story
+	err := m.db.Where("person_id = ? AND time >= ? AND time <= ?", personID, timeFrom, timeTo).Find(&item).Error
+	if err != nil {
+		return nil, err
+	}
+	return item, nil
 }
