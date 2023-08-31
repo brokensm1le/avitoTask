@@ -170,3 +170,75 @@ paths:
                 type: string
         401:
           description: Операция завершена с ошибкой
+
+  '/api/checkHistory/{personID}':
+    get:
+      summary: Получение истории пользователя в определенный промежуток времени
+      parameters:
+        - in: path
+          name: personID
+          required: true
+          schema:
+            description: ID, по которому необходимо получить ID пользователей
+            type: string
+            pattern: '[a-z0-9]+'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - timeFrom
+                - timeTo
+              properties:
+                timeFrom:
+                  type: string
+                  format: date-time
+                timeTo:
+                  type: string
+                  format: date-time
+      responses:
+        200:
+          description: Операция успешно завершена
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        401:
+          description: Операция завершена с ошибкой
+
+  '/api/addWithPercentage':
+    post:
+      summary: Добавляет сегмент в ID пользователей с определенным процентом
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - segment
+                - IDs
+                - percentage
+              properties:
+                segment:
+                  type: string
+                IDs:
+                  type: array
+                  items:
+                    type: integer
+                percentage:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+      responses:
+        200:
+          description: Операция успешно завершена
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+        401:
+          description: Операция завершена с ошибкой
