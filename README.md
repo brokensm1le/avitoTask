@@ -77,6 +77,9 @@ curl -XGET http://0.0.0.0:8080/api/checkHistory/1002 -H 'accept: application/jso
 curl -XPOST http://0.0.0.0:8080/api/addWithPercentage -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"segment": "AVITO_PERFORMANCE_VAS", "IDs": [1003, 1004, 1005, 1006], "percentage":50}'
 ```
 
+### Доп задание №2
+
+*(Не выполнил)* Но идея выполнения состоит в том чтобы создать сервис, который отправляет запросы к базе данных. И смотрит кможно ли что-то удалить.
 
 ## Подробности о сервисе
 
