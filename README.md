@@ -48,6 +48,14 @@ curl -XGET http://0.0.0.0:8080/api/segment/AVITO_VOICE_MESSAGES -H 'accept: appl
 ```
 curl -XPOST http://0.0.0.0:8080/api/deleteSegments/1002 -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"segments": ["AVITO_PERFORMANCE_VAS"]}'
 ```
+
+### Доп задание №1
+```
+curl -XGET http://0.0.0.0:8080/api/checkHistory/2 -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"timeFrom": "2023-08-31T18:05:12.000Z", "timeTo": "2023-08-31T18:13:40.000Z"}'
+```
+*Замечание.* По тексту задания не понял какую именно ссылку надо было отправлять пользователю. Поэтому вывод истории выводится в консоль.
+
+
 ### Доп задание №3
 
 ```
@@ -63,6 +71,7 @@ curl -XPOST http://0.0.0.0:8080/api/addWithPercentage -H 'accept: application/js
 Всего две таблицы:  
  - id_seg: которая хранит информацию id пользоваетля -> сегменты пользоваля
  - seg_id: которая хранит информацию сегмент -> id пользователей у которых есть данный сегмент
+ - hystiry: для хранения истории запросов(доп задание №1)
 
 Это было сделано для того, чтобы уменьшить количество запросов. Те при удалении сегмента нам будет необходимо пройтись не по всей Таблице а только по определенным ID.
 
